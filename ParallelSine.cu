@@ -2,7 +2,7 @@
 // Assignment 1: ParallelSine
 // CSCI 415: Networking and Parallel Computation
 // Spring 2017
-// Name(s): 
+// Name(s):
 //
 // Sine implementation derived from slides here: http://15418.courses.cs.cmu.edu/spring2016/lecture/basicarch
 
@@ -27,25 +27,25 @@ void sine_serial(float *input, float *output)
   int i;
 
   for (i=0; i<N; i++) {
-      float value = input[i]; 
-      float numer = input[i] * input[i] * input[i]; 
-      int denom = 6; // 3! 
-      int sign = -1; 
-      for (int j=1; j<=TERMS;j++) 
-      { 
-         value += sign * numer / denom; 
-         numer *= input[i] * input[i]; 
-         denom *= (2*j+2) * (2*j+3); 
-         sign *= -1; 
-      } 
-      output[i] = value; 
+      float value = input[i];
+      float numer = input[i] * input[i] * input[i];
+      int denom = 6; // 3!
+      int sign = -1;
+      for (int j=1; j<=TERMS;j++)
+      {
+         value += sign * numer / denom;
+         numer *= input[i] * input[i];
+         denom *= (2*j+2) * (2*j+3);
+         sign *= -1;
+      }
+      output[i] = value;
     }
 }
 
 
 // kernel function (CUDA device)
 // TODO: Implement your graphics kernel here. See assignment instructions for method information
-
+//kernel
 // BEGIN: timing and error checking routines (do not modify)
 
 // Returns the current time in microseconds
@@ -61,7 +61,7 @@ long long stop_timer(long long start_time, std::string name) {
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
 	long long end_time = tv.tv_sec * 1000000 + tv.tv_usec;
-        std::cout << std::setprecision(5);	
+        std::cout << std::setprecision(5);
 	std::cout << name << ": " << ((float) (end_time - start_time)) / (1000 * 1000) << " sec\n";
 	return end_time - start_time;
 }
@@ -133,9 +133,3 @@ int main (int argc, char **argv)
   free(h_gpu_result);
   return 0;
 }
-
-
-
-
-
-
