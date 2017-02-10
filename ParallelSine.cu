@@ -38,23 +38,20 @@ void sine_serial(float *input, float *output)
 
 __global__ void sine_parallel(float *input, float *output)
 {
-	// dimension structure with fields
-  int idx = blockIdx.x * 512 + threadIdx.x;
+  int id = blockIdx.x * 1024 + threadIdx.x;
    
-  float value = input[idx];
-	// multiplying by 3
-  float numer = input[idx] * input[idx] * input[idx];
+  float value = input[id];
+  float numer = input[id] * input[id] * input[id]; //multiplying by 3
   int denom = 6;
   int sign = -1;
   for (int i = 1; i<=TERMS; i++)
   {
 	value += sign * numer / denom;
-	numer *= input[idx] * input[idx];
+	numer *= input[id] * input[id];
 	denom *= (2 * i + 2) * (2 * i + 3);
 	sign *= -1;
   }
-	// result writing into output array
-  output[idx] = value;
+  output[id] = value; //writing into output array
 }
 
 // BEGIN: timing and error checking routines (do not modify)
@@ -125,39 +122,33 @@ int main (int argc, char **argv)
 
   //TODO: Prepare and run your kernel, make sure to copy your results back into h_gpu_result and display your timing results
  
-// instantiating constat values
-  const int sizeOfBlock = 512;
-  const int sizeOfGrid = N/512 + 1; 
+  // instantiating constat values
+  const int sizeOfBlock = 1024;
+  const int sizeOfGrid = N/1024 + 1; 
   const float bytes = N * sizeof(float);
 	
-//Declaring the arrays  
+  //Arrays  
   float *d_input;
   float *d_output;
-
-	
-  // timer for GPU start time
-  long long GPU_startTotal = start_timer();
-   
-  //Allocating memory
-  float *h_gpu_result = (float*)malloc(bytes);
+  long long GPU_startTotal = start_timer(); //GPU start time
+  float *h_gpu_result = (float*)malloc(bytes); //Allocating memory
   
   //Allocating memory to the GPU and timing it
   long long GPU_allocateStart = start_timer();
   cudaMalloc((void**) &d_input, bytes);
   cudaMalloc((void**) &d_output, bytes);
   long long GPU_allocateTime = stop_timer(GPU_allocateStart, "\nGPU Memory Allocation");
-
-  // Copying input to output and timing it
+	
   long long GPU_dcopyStart = start_timer();
   cudaMemcpy(d_input, h_input, bytes, cudaMemcpyHostToDevice);
-  long long GPU_dcopyTime = stop_timer(GPU_dcopyStart, "Copying GPU Memory to Device");
+  long long GPU_dcopyTime = stop_timer(GPU_dcopyStart, "Copying GPU Memory to Device"); 
 
   //Launching the kernel with N threads and then timing it
   long long GPU_kernelStart = start_timer();
   sine_parallel<<<sizeOfGrid, sizeOfBlock>>>(d_input, d_output);
   long long GPU_kernelTime = stop_timer(GPU_kernelStart, "GPU Kernel Run Time");
 
-  //Copying the output of parallel_sine back to the host (h_gpu_result) and timing it
+  //Copying the output to the host
   long long GPU_hcopyStart = start_timer();
   cudaMemcpy(h_gpu_result, d_output, bytes, cudaMemcpyDeviceToHost);
   long long GPU_hcopyTime = stop_timer(GPU_hcopyStart, "Copying GPU Memory to Host");
@@ -167,7 +158,7 @@ int main (int argc, char **argv)
   cudaFree(d_input);
   cudaFree(d_output);
 
-  // End timer for GPU
+  // End GPU timer
   long long GPU_totalTime = stop_timer(GPU_startTotal, "Total GPU Run Time");
 
   // Checking to make sure the CPU and GPU results match - Do not modify
